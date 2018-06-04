@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+    influx:
+        image: influxdb:latest
+        ports:
+            - "8083:8083"
+            - "8086:8086"
+            - "8090:8090"
+        volumes:
+            - ./data/influxdb:/var/lib/influxdb
+        environment:
+            - INFLUXDB_DB=bl3pbot
+
+    grafana:
+        depends_on:
+            - influx
+        image: grafana/grafana:latest
+        ports:
+            - "3000:3000"
+        links:
+          - influx
+        environment:
+            - GF_SECURITY_ADMIN_PASSWORD=secret
+        volumes:
+            - ./data/grafana:/var/lib/grafana
+
+    bl3p:
+        build: .
+        volumes:
+            - .:/app
+        links:
+          - influx
+        depends_on:
+            - influx
